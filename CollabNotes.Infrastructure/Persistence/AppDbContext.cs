@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<Folder> Folders => Set<Folder>();
     public DbSet<NotePermission> NotePermissions => Set<NotePermission>();
+    public DbSet<NoteSnapshot> NoteSnapshots => Set<NoteSnapshot>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

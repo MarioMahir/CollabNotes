@@ -10,6 +10,8 @@ public static class DependencyInjection
     {
         services.AddScoped<INoteService, NoteService>();
         services.AddScoped<IFolderService, FolderService>();
+        services.AddSingleton<IPresenceTracker, PresenceTracker>();
+        services.AddScoped<ICollaborationService, CollaborationService>();
 
         return services;
     }

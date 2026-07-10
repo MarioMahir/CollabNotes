@@ -29,3 +29,21 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.connection-banner {
+  margin-bottom: 1rem;
+}
+
+.note-block {
+  transition: background-color 0.4s ease;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+}
+
+.note-block.block-recently-edited {
+  background-color: #fff3cd;
+}
+
+.typing-badge {
+  display: inline-block;
+}

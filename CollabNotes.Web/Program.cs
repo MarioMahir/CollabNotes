@@ -1,4 +1,5 @@
 using CollabNotes.Application;
+using CollabNotes.Application.Options;
 using CollabNotes.Infrastructure;
 using CollabNotes.Web.Hubs;
 
@@ -10,6 +11,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+builder.Services.Configure<NoteSnapshotOptions>(builder.Configuration.GetSection("Collaboration"));
 
 var app = builder.Build();
 

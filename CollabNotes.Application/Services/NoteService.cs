@@ -1,7 +1,10 @@
+using CollabNotes.Application.Common;
 using CollabNotes.Application.Dtos;
 using CollabNotes.Application.Interfaces;
+using CollabNotes.Application.Options;
 using CollabNotes.Domain.Entities;
 using CollabNotes.Domain.Enums;
+using Microsoft.Extensions.Options;
 
 namespace CollabNotes.Application.Services;
 
@@ -9,11 +12,19 @@ public class NoteService : INoteService
 {
     private readonly INoteRepository _noteRepository;
     private readonly IUserLookupService _userLookup;
+    private readonly INoteSnapshotRepository _snapshotRepository;
+    private readonly NoteSnapshotOptions _snapshotOptions;
 
-    public NoteService(INoteRepository noteRepository, IUserLookupService userLookup)
+    public NoteService(
+        INoteRepository noteRepository,
+        IUserLookupService userLookup,
+        INoteSnapshotRepository snapshotRepository,
+        IOptions<NoteSnapshotOptions> snapshotOptions)
     {
         _noteRepository = noteRepository;
         _userLookup = userLookup;
+        _snapshotRepository = snapshotRepository;
+        _snapshotOptions = snapshotOptions.Value;
     }
 
     public async Task<IEnumerable<NoteDto>> GetNotesByFolderAsync(Guid? folderId, string userId)
@@ -131,20 +142,44 @@ public class NoteService : INoteService
 
     public async Task UpdateAsync(Guid noteId, string title, string content, string userId)
     {
-        var permission = await _noteRepository.GetPermissionAsync(noteId, userId);
-        if (permission is null || permission.Role == PermissionRole.Reader)
-        {
-            throw new UnauthorizedAccessException("El usuario no puede editar esta nota.");
-        }
+        var note = await EnsureEditableAsync(noteId, userId);
 
-        var note = await _noteRepository.GetByIdAsync(noteId)
-            ?? throw new InvalidOperationException("La nota no existe.");
+        await MaybeSnapshotAsync(note);
 
         note.Title = title;
         note.Content = content;
         note.UpdatedAtUtc = DateTime.UtcNow;
 
         await _noteRepository.SaveChangesAsync();
+    }
+
+    public async Task<BlockUpdateDto> UpdateBlockAsync(Guid noteId, int blockIndex, string blockContent, string userId)
+    {
+        var note = await EnsureEditableAsync(noteId, userId);
+
+        await MaybeSnapshotAsync(note);
+
+        var blocks = NoteBlockSplitter.Split(note.Content).ToList();
+        while (blocks.Count <= blockIndex)
+        {
+            blocks.Add(string.Empty);
+        }
+        blocks[blockIndex] = blockContent;
+
+        note.Content = NoteBlockSplitter.Join(blocks);
+        var now = DateTime.UtcNow;
+        note.UpdatedAtUtc = now;
+
+        await _noteRepository.SaveChangesAsync();
+
+        return new BlockUpdateDto
+        {
+            NoteId = noteId,
+            BlockIndex = blockIndex,
+            Content = blockContent,
+            EditedByUserId = userId,
+            UpdatedAtUtc = now
+        };
     }
 
     public async Task DeleteAsync(Guid noteId, string userId)
@@ -162,6 +197,62 @@ public class NoteService : INoteService
         await _noteRepository.SaveChangesAsync();
     }
 
+    public async Task<IEnumerable<NoteSnapshotDto>> GetSnapshotsAsync(Guid noteId, string userId)
+    {
+        var permission = await _noteRepository.GetPermissionAsync(noteId, userId);
+        if (permission is null)
+        {
+            throw new UnauthorizedAccessException("El usuario no tiene acceso a esta nota.");
+        }
+
+        var snapshots = await _snapshotRepository.GetByNoteAsync(noteId);
+        return snapshots
+            .OrderByDescending(s => s.CreatedAtUtc)
+            .Select(ToSnapshotDto);
+    }
+
+    public async Task<NoteSnapshotDto?> GetSnapshotAsync(Guid noteId, Guid snapshotId, string userId)
+    {
+        var permission = await _noteRepository.GetPermissionAsync(noteId, userId);
+        if (permission is null)
+        {
+            throw new UnauthorizedAccessException("El usuario no tiene acceso a esta nota.");
+        }
+
+        var snapshot = await _snapshotRepository.GetByIdAsync(noteId, snapshotId);
+        return snapshot is null ? null : ToSnapshotDto(snapshot);
+    }
+
+    private async Task<Note> EnsureEditableAsync(Guid noteId, string userId)
+    {
+        var permission = await _noteRepository.GetPermissionAsync(noteId, userId);
+        if (permission is null || permission.Role == PermissionRole.Reader)
+        {
+            throw new UnauthorizedAccessException("El usuario no puede editar esta nota.");
+        }
+
+        return await _noteRepository.GetByIdAsync(noteId)
+            ?? throw new InvalidOperationException("La nota no existe.");
+    }
+
+    private async Task MaybeSnapshotAsync(Note note)
+    {
+        var latest = await _snapshotRepository.GetLatestAsync(note.Id);
+        var dueForSnapshot = latest is null
+            || DateTime.UtcNow - latest.CreatedAtUtc >= TimeSpan.FromMinutes(_snapshotOptions.SnapshotIntervalMinutes);
+
+        if (dueForSnapshot)
+        {
+            await _snapshotRepository.AddAsync(new NoteSnapshot
+            {
+                Id = Guid.NewGuid(),
+                NoteId = note.Id,
+                Content = note.Content,
+                CreatedAtUtc = DateTime.UtcNow
+            });
+        }
+    }
+
     private static NoteDto ToDto(Note note) => new()
     {
         Id = note.Id,
@@ -170,5 +261,13 @@ public class NoteService : INoteService
         FolderId = note.FolderId,
         OwnerId = note.OwnerId,
         UpdatedAtUtc = note.UpdatedAtUtc
+    };
+
+    private static NoteSnapshotDto ToSnapshotDto(NoteSnapshot snapshot) => new()
+    {
+        Id = snapshot.Id,
+        NoteId = snapshot.NoteId,
+        Content = snapshot.Content,
+        CreatedAtUtc = snapshot.CreatedAtUtc
     };
 }

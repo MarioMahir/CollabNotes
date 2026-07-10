@@ -1,0 +1,12 @@
+@model CollabNotes.Web.Models.Notes.NoteHistoryViewModel
+@{
+    var snapshot = Model.Snapshots.First();
+    ViewData["Title"] = "Snapshot de " + Model.NoteTitle;
+}
+
+<h1>Snapshot: @Model.NoteTitle</h1>
+<p class="text-muted">Guardado el @snapshot.CreatedAtUtc.ToLocalTime()</p>
+
+<a asp-action="History" asp-route-id="@Model.NoteId" class="btn btn-outline-secondary mb-3">Volver al historial</a>
+
+<textarea class="form-control" rows="15" readonly>@snapshot.Content</textarea>

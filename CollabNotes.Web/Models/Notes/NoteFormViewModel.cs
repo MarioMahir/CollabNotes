@@ -21,4 +21,6 @@ public class NoteFormViewModel
     public PermissionRole ViewerRole { get; set; }
 
     public IEnumerable<NotePermissionDto> Members { get; set; } = [];
+
+    public IReadOnlyList<string> Blocks { get; set; } = [];
 }

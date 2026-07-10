@@ -12,4 +12,7 @@ public interface INoteService
     Task DeleteAsync(Guid noteId, string userId);
     Task InviteUserAsync(Guid noteId, string inviterUserId, string emailOrUsername, PermissionRole role);
     Task<IEnumerable<NotePermissionDto>> GetMembersAsync(Guid noteId, string requestingUserId);
+    Task<BlockUpdateDto> UpdateBlockAsync(Guid noteId, int blockIndex, string blockContent, string userId);
+    Task<IEnumerable<NoteSnapshotDto>> GetSnapshotsAsync(Guid noteId, string userId);
+    Task<NoteSnapshotDto?> GetSnapshotAsync(Guid noteId, Guid snapshotId, string userId);
 }

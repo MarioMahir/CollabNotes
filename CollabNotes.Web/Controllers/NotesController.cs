@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CollabNotes.Application.Common;
 using CollabNotes.Application.Interfaces;
 using CollabNotes.Domain.Enums;
 using CollabNotes.Web.Models.Notes;
@@ -73,6 +74,7 @@ public class NotesController : Controller
             Content = note.Content,
             FolderId = note.FolderId,
             ViewerRole = note.ViewerRole,
+            Blocks = NoteBlockSplitter.Split(note.Content),
             Folders = await _folderService.GetFoldersAsync(CurrentUserId),
             Members = await _noteService.GetMembersAsync(id, CurrentUserId)
         };
@@ -149,5 +151,47 @@ public class NotesController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<IActionResult> History(Guid id)
+    {
+        var note = await _noteService.GetByIdAsync(id, CurrentUserId);
+        if (note is null)
+        {
+            return NotFound();
+        }
+
+        var vm = new NoteHistoryViewModel
+        {
+            NoteId = id,
+            NoteTitle = note.Title,
+            Snapshots = await _noteService.GetSnapshotsAsync(id, CurrentUserId)
+        };
+
+        return View(vm);
+    }
+
+    public async Task<IActionResult> SnapshotDetail(Guid id, Guid snapshotId)
+    {
+        var note = await _noteService.GetByIdAsync(id, CurrentUserId);
+        if (note is null)
+        {
+            return NotFound();
+        }
+
+        var snapshot = await _noteService.GetSnapshotAsync(id, snapshotId, CurrentUserId);
+        if (snapshot is null)
+        {
+            return NotFound();
+        }
+
+        var vm = new NoteHistoryViewModel
+        {
+            NoteId = id,
+            NoteTitle = note.Title,
+            Snapshots = [snapshot]
+        };
+
+        return View(vm);
     }
 }

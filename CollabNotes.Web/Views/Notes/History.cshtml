@@ -1,0 +1,24 @@
+@model CollabNotes.Web.Models.Notes.NoteHistoryViewModel
+
+@{
+    ViewData["Title"] = "Historial de " + Model.NoteTitle;
+}
+
+<h1>Historial: @Model.NoteTitle</h1>
+
+<a asp-action="Edit" asp-route-id="@Model.NoteId" class="btn btn-outline-secondary mb-3">Volver a la nota</a>
+
+@if (!Model.Snapshots.Any())
+{
+    <p class="text-muted">Todavía no hay snapshots guardados para esta nota.</p>
+}
+
+<ul class="list-group">
+    @foreach (var snapshot in Model.Snapshots)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>@snapshot.CreatedAtUtc.ToLocalTime()</span>
+            <a asp-action="SnapshotDetail" asp-route-id="@Model.NoteId" asp-route-snapshotId="@snapshot.Id" class="btn btn-sm btn-outline-primary">Ver</a>
+        </li>
+    }
+</ul>
