@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CollabNotes.Application.Interfaces;
+using CollabNotes.Domain.Enums;
 using CollabNotes.Web.Models.Notes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -71,7 +72,9 @@ public class NotesController : Controller
             Title = note.Title,
             Content = note.Content,
             FolderId = note.FolderId,
-            Folders = await _folderService.GetFoldersAsync(CurrentUserId)
+            ViewerRole = note.ViewerRole,
+            Folders = await _folderService.GetFoldersAsync(CurrentUserId),
+            Members = await _noteService.GetMembersAsync(id, CurrentUserId)
         };
 
         return View(vm);
@@ -84,6 +87,7 @@ public class NotesController : Controller
         if (!ModelState.IsValid)
         {
             vm.Folders = await _folderService.GetFoldersAsync(CurrentUserId);
+            vm.Members = await _noteService.GetMembersAsync(id, CurrentUserId);
             return View(vm);
         }
 
@@ -97,6 +101,26 @@ public class NotesController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> InviteUser(Guid id, string emailOrUsername, PermissionRole role)
+    {
+        try
+        {
+            await _noteService.InviteUserAsync(id, CurrentUserId, emailOrUsername, role);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["InviteError"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Edit), new { id });
     }
 
     [HttpPost]

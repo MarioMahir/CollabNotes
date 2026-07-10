@@ -8,10 +8,12 @@ namespace CollabNotes.Application.Services;
 public class NoteService : INoteService
 {
     private readonly INoteRepository _noteRepository;
+    private readonly IUserLookupService _userLookup;
 
-    public NoteService(INoteRepository noteRepository)
+    public NoteService(INoteRepository noteRepository, IUserLookupService userLookup)
     {
         _noteRepository = noteRepository;
+        _userLookup = userLookup;
     }
 
     public async Task<IEnumerable<NoteDto>> GetNotesByFolderAsync(Guid? folderId, string userId)
@@ -29,7 +31,75 @@ public class NoteService : INoteService
         }
 
         var note = await _noteRepository.GetByIdAsync(noteId);
-        return note is null ? null : ToDto(note);
+        if (note is null)
+        {
+            return null;
+        }
+
+        var dto = ToDto(note);
+        dto.ViewerRole = permission.Role;
+        return dto;
+    }
+
+    public async Task InviteUserAsync(Guid noteId, string inviterUserId, string emailOrUsername, PermissionRole role)
+    {
+        var inviterPermission = await _noteRepository.GetPermissionAsync(noteId, inviterUserId);
+        if (inviterPermission is null || inviterPermission.Role != PermissionRole.Owner)
+        {
+            throw new UnauthorizedAccessException("Solo el propietario puede invitar colaboradores.");
+        }
+
+        var inviteeUserId = await _userLookup.FindUserIdAsync(emailOrUsername)
+            ?? throw new InvalidOperationException("No se encontró ningún usuario con ese email o nombre de usuario.");
+
+        if (inviteeUserId == inviterUserId)
+        {
+            throw new InvalidOperationException("No puedes invitarte a ti mismo.");
+        }
+
+        var existingPermission = await _noteRepository.GetPermissionAsync(noteId, inviteeUserId);
+        if (existingPermission is not null)
+        {
+            existingPermission.Role = role;
+        }
+        else
+        {
+            await _noteRepository.AddPermissionAsync(new NotePermission
+            {
+                Id = Guid.NewGuid(),
+                NoteId = noteId,
+                UserId = inviteeUserId,
+                Role = role
+            });
+        }
+
+        await _noteRepository.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<NotePermissionDto>> GetMembersAsync(Guid noteId, string requestingUserId)
+    {
+        var requesterPermission = await _noteRepository.GetPermissionAsync(noteId, requestingUserId);
+        if (requesterPermission is null)
+        {
+            throw new UnauthorizedAccessException("El usuario no tiene acceso a esta nota.");
+        }
+
+        var note = await _noteRepository.GetByIdAsync(noteId)
+            ?? throw new InvalidOperationException("La nota no existe.");
+
+        var members = new List<NotePermissionDto>();
+        foreach (var permission in note.Permissions)
+        {
+            var displayName = await _userLookup.GetDisplayNameAsync(permission.UserId) ?? permission.UserId;
+            members.Add(new NotePermissionDto
+            {
+                UserId = permission.UserId,
+                DisplayName = displayName,
+                Role = permission.Role
+            });
+        }
+
+        return members;
     }
 
     public async Task<NoteDto> CreateAsync(string title, Guid? folderId, string userId)

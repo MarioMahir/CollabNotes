@@ -32,6 +32,8 @@ public class NoteRepository : INoteRepository
     public Task<NotePermission?> GetPermissionAsync(Guid noteId, string userId)
         => _context.NotePermissions.FirstOrDefaultAsync(p => p.NoteId == noteId && p.UserId == userId);
 
+    public async Task AddPermissionAsync(NotePermission permission) => await _context.NotePermissions.AddAsync(permission);
+
     public async Task AddAsync(Note note) => await _context.Notes.AddAsync(note);
 
     public void Remove(Note note) => _context.Notes.Remove(note);

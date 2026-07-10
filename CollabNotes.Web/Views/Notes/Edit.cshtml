@@ -1,40 +1,88 @@
 @model CollabNotes.Web.Models.Notes.NoteFormViewModel
+@using CollabNotes.Domain.Enums
 
 @{
     ViewData["Title"] = "Editar nota";
+    var isReader = Model.ViewerRole == PermissionRole.Reader;
 }
 
 <h1>Editar nota</h1>
 
-<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="col-md-8">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input type="hidden" asp-for="Id" />
+@if (TempData["InviteError"] is string inviteError)
+{
+    <div class="alert alert-danger">@inviteError</div>
+}
 
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label"></label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
-    </div>
+<div class="row">
+    <div class="col-md-8">
+        @if (isReader)
+        {
+            <div class="alert alert-info">Tienes acceso de solo lectura a esta nota.</div>
+        }
 
-    <div class="mb-3">
-        <label asp-for="FolderId" class="form-label">Carpeta</label>
-        <select asp-for="FolderId" class="form-select">
-            <option value="">(sin carpeta)</option>
-            @foreach (var folder in Model.Folders)
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" disabled="@isReader" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FolderId" class="form-label">Carpeta</label>
+                <select asp-for="FolderId" class="form-select" disabled="@isReader">
+                    <option value="">(sin carpeta)</option>
+                    @foreach (var folder in Model.Folders)
+                    {
+                        <option value="@folder.Id">@folder.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Content" class="form-label"></label>
+                <textarea asp-for="Content" class="form-control" rows="15" disabled="@isReader"></textarea>
+            </div>
+
+            @if (!isReader)
             {
-                <option value="@folder.Id">@folder.Name</option>
+                <button type="submit" class="btn btn-primary">Guardar</button>
             }
-        </select>
+            <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+        </form>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Content" class="form-label"></label>
-        <textarea asp-for="Content" class="form-control" rows="15"></textarea>
-    </div>
+    <div class="col-md-4">
+        <h5>Colaboradores</h5>
+        <ul class="list-group mb-3">
+            @foreach (var member in Model.Members)
+            {
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>@member.DisplayName</span>
+                    <span class="badge bg-secondary">@member.Role</span>
+                </li>
+            }
+        </ul>
 
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
-</form>
+        @if (Model.ViewerRole == PermissionRole.Owner)
+        {
+            <form asp-action="InviteUser" asp-route-id="@Model.Id" method="post">
+                <div class="mb-2">
+                    <input type="text" name="emailOrUsername" class="form-control form-control-sm" placeholder="Email o usuario" required />
+                </div>
+                <div class="mb-2">
+                    <select name="role" class="form-select form-select-sm">
+                        <option value="@PermissionRole.Editor">Editor</option>
+                        <option value="@PermissionRole.Reader">Lector</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline-primary">Invitar</button>
+            </form>
+        }
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

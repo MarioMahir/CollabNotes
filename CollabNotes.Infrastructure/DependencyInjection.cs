@@ -21,6 +21,7 @@ public static class DependencyInjection
 
         services.AddScoped<INoteRepository, NoteRepository>();
         services.AddScoped<IFolderRepository, FolderRepository>();
+        services.AddScoped<IUserLookupService, UserLookupService>();
 
         return services;
     }

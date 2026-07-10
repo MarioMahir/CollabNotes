@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using CollabNotes.Application.Dtos;
+using CollabNotes.Domain.Enums;
 
 namespace CollabNotes.Web.Models.Notes;
 
@@ -16,4 +17,8 @@ public class NoteFormViewModel
     public Guid? FolderId { get; set; }
 
     public IEnumerable<FolderDto> Folders { get; set; } = [];
+
+    public PermissionRole ViewerRole { get; set; }
+
+    public IEnumerable<NotePermissionDto> Members { get; set; } = [];
 }
