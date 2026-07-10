@@ -6,29 +6,31 @@
 
 <h1>Nueva nota</h1>
 
-<form asp-action="Create" method="post" class="col-md-6">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="surface-card p-4 col-md-6">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label"></label>
-        <input asp-for="Title" class="form-control" autofocus />
-        <span asp-validation-for="Title" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" autofocus />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="FolderId" class="form-label">Carpeta</label>
-        <select asp-for="FolderId" class="form-select">
-            <option value="">(sin carpeta)</option>
-            @foreach (var folder in Model.Folders)
-            {
-                <option value="@folder.Id">@folder.Name</option>
-            }
-        </select>
-    </div>
+        <div class="mb-3">
+            <label asp-for="FolderId" class="form-label">Carpeta</label>
+            <select asp-for="FolderId" class="form-select">
+                <option value="">(sin carpeta)</option>
+                @foreach (var folder in Model.Folders)
+                {
+                    <option value="@folder.Id">@folder.Name</option>
+                }
+            </select>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Crear</button>
-    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
-</form>
+        <button type="submit" class="btn btn-primary">Crear</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

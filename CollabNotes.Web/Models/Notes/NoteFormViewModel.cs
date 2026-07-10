@@ -8,8 +8,8 @@ public class NoteFormViewModel
 {
     public Guid Id { get; set; }
 
-    [Required]
-    [StringLength(200)]
+    [Required(ErrorMessage = "El título es obligatorio.")]
+    [StringLength(200, ErrorMessage = "El título no puede superar los 200 caracteres.")]
     public string Title { get; set; } = string.Empty;
 
     public string Content { get; set; } = string.Empty;

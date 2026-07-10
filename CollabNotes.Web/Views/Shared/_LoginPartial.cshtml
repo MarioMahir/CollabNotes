@@ -3,25 +3,33 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
+<ul class="navbar-nav account-menu">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <span class="nav-link text-dark">Hola, @UserManager.GetUserName(User)!</span>
-    </li>
-    <li class="nav-item">
-        <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button id="logout" type="submit" class="nav-link btn btn-link text-dark">Salir</button>
-        </form>
+    var userName = UserManager.GetUserName(User) ?? "?";
+    <li class="nav-item dropdown">
+        <a class="btn-account dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="account-avatar">@userName.Substring(0, 1).ToUpperInvariant()</span>
+            <span class="d-none d-md-inline">@userName</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><h6 class="dropdown-header">Hola, @userName</h6></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button id="logout" type="submit" class="dropdown-item">Salir</button>
+                </form>
+            </li>
+        </ul>
     </li>
 }
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Registrarse</a>
+        <a class="btn btn-outline-primary btn-sm me-2" asp-area="Identity" asp-page="/Account/Register">Registrarse</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Iniciar sesión</a>
+        <a class="btn btn-primary btn-sm" asp-area="Identity" asp-page="/Account/Login">Iniciar sesión</a>
     </li>
 }
 </ul>

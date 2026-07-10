@@ -4,27 +4,31 @@
     ViewData["Title"] = "Mis notas";
 }
 
-<h1>Mis notas</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Mis notas</h1>
+</div>
 
-<div class="row">
+<div class="row g-4">
     <div class="col-md-3">
-        <h5>Carpetas</h5>
-        <ul class="list-group mb-3">
-            <li class="list-group-item @(Model.SelectedFolderId is null ? "active" : "")">
-                <a class="@(Model.SelectedFolderId is null ? "text-white" : "")" asp-action="Index">Todas</a>
-            </li>
-            @foreach (var folder in Model.Folders)
-            {
-                <li class="list-group-item @(Model.SelectedFolderId == folder.Id ? "active" : "")">
-                    <a class="@(Model.SelectedFolderId == folder.Id ? "text-white" : "")" asp-action="Index" asp-route-folderId="@folder.Id">@folder.Name</a>
-                </li>
-            }
-        </ul>
+        <div class="surface-card p-3 mb-3">
+            <div class="collab-panel-title">Carpetas</div>
+            <nav class="folder-nav mb-3">
+                <a class="folder-nav-link @(Model.SelectedFolderId is null ? "active" : "")" asp-action="Index">
+                    <span>Todas</span>
+                </a>
+                @foreach (var folder in Model.Folders)
+                {
+                    <a class="folder-nav-link @(Model.SelectedFolderId == folder.Id ? "active" : "")" asp-action="Index" asp-route-folderId="@folder.Id">
+                        <span>@folder.Name</span>
+                    </a>
+                }
+            </nav>
 
-        <form asp-action="CreateFolder" method="post" class="d-flex">
-            <input type="text" name="name" class="form-control form-control-sm me-2" placeholder="Nueva carpeta" required />
-            <button type="submit" class="btn btn-sm btn-outline-secondary">Crear</button>
-        </form>
+            <form asp-action="CreateFolder" method="post" class="d-flex">
+                <input type="text" name="name" class="form-control form-control-sm me-2" placeholder="Nueva carpeta" required />
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Crear</button>
+            </form>
+        </div>
     </div>
 
     <div class="col-md-9">
@@ -32,22 +36,26 @@
 
         @if (!Model.Notes.Any())
         {
-            <p class="text-muted">No hay notas todavía.</p>
+            <div class="empty-state">
+                <p class="mb-0">No hay notas todavía. Crea la primera para empezar a colaborar.</p>
+            </div>
         }
-
-        <div class="list-group">
-            @foreach (var note in Model.Notes)
-            {
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <a asp-action="Edit" asp-route-id="@note.Id">
-                        <strong>@note.Title</strong>
-                        <div class="text-muted small">Actualizada: @note.UpdatedAtUtc.ToLocalTime()</div>
-                    </a>
-                    <form asp-action="Delete" asp-route-id="@note.Id" method="post" onsubmit="return confirm('¿Eliminar esta nota?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                    </form>
-                </div>
-            }
-        </div>
+        else
+        {
+            <div class="notes-grid">
+                @foreach (var note in Model.Notes)
+                {
+                    <div class="note-card">
+                        <a class="note-card-title" asp-action="Edit" asp-route-id="@note.Id">@note.Title</a>
+                        <div class="note-card-meta">Actualizada: @note.UpdatedAtUtc.ToLocalTime()</div>
+                        <div class="note-card-footer">
+                            <form asp-action="Delete" asp-route-id="@note.Id" method="post" onsubmit="return confirm('¿Eliminar esta nota?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
     </div>
 </div>

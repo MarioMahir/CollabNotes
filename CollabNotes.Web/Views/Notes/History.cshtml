@@ -10,15 +10,21 @@
 
 @if (!Model.Snapshots.Any())
 {
-    <p class="text-muted">Todavía no hay snapshots guardados para esta nota.</p>
+    <div class="empty-state">
+        <p class="mb-0">Todavía no hay snapshots guardados para esta nota.</p>
+    </div>
 }
-
-<ul class="list-group">
-    @foreach (var snapshot in Model.Snapshots)
-    {
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>@snapshot.CreatedAtUtc.ToLocalTime()</span>
-            <a asp-action="SnapshotDetail" asp-route-id="@Model.NoteId" asp-route-snapshotId="@snapshot.Id" class="btn btn-sm btn-outline-primary">Ver</a>
-        </li>
-    }
-</ul>
+else
+{
+    <div class="surface-card">
+        <ul class="list-group list-group-flush">
+            @foreach (var snapshot in Model.Snapshots)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>@snapshot.CreatedAtUtc.ToLocalTime()</span>
+                    <a asp-action="SnapshotDetail" asp-route-id="@Model.NoteId" asp-route-snapshotId="@snapshot.Id" class="btn btn-sm btn-outline-primary">Ver</a>
+                </li>
+            }
+        </ul>
+    </div>
+}

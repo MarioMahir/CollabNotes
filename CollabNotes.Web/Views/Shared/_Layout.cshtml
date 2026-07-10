@@ -9,25 +9,36 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CollabNotes.Web.styles.css" asp-append-version="true" />
 </head>
+@{
+    var activeController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var activeAction = ViewContext.RouteData.Values["action"]?.ToString();
+    Func<string, string, string> navActive = (controller, action) =>
+        string.Equals(activeController, controller, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(activeAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "nav-link active" : "nav-link";
+}
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm app-navbar mb-4">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CollabNotes.Web</a>
+                <a class="app-brand navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="app-brand-mark">CN</span>
+                    <span>CollabNotes</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav app-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="@navActive("Home", "Index")" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Notes" asp-action="Index">Notas</a>
+                            <a class="@navActive("Notes", "Index")" asp-area="" asp-controller="Notes" asp-action="Index">Notas</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="@navActive("Home", "Privacy")" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -41,9 +52,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="app-footer footer">
         <div class="container">
-            &copy; 2026 - CollabNotes.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2026 - CollabNotes - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

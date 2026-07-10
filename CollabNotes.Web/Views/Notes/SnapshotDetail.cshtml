@@ -9,4 +9,6 @@
 
 <a asp-action="History" asp-route-id="@Model.NoteId" class="btn btn-outline-secondary mb-3">Volver al historial</a>
 
-<textarea class="form-control" rows="15" readonly>@snapshot.Content</textarea>
+<div class="surface-card p-3">
+    <textarea class="form-control note-block-textarea" rows="15" readonly>@snapshot.Content</textarea>
+</div>

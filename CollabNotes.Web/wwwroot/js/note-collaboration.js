@@ -242,11 +242,11 @@
                 var nextIndex = existing.length;
 
                 var wrapper = document.createElement("div");
-                wrapper.className = "note-block mb-2";
+                wrapper.className = "note-block";
                 wrapper.dataset.blockIndex = nextIndex;
 
                 var badge = document.createElement("span");
-                badge.className = "typing-badge d-none badge bg-info text-dark mb-1";
+                badge.className = "typing-badge d-none mb-1";
                 badge.textContent = "Alguien está escribiendo…";
 
                 var textarea = document.createElement("textarea");

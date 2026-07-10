@@ -1,3 +1,52 @@
+/* ===========================================================
+   CollabNotes design tokens
+   Overrides Bootstrap 5 CSS variables + adds a small set of
+   custom properties. No external fonts / CDNs — system stack.
+   =========================================================== */
+:root {
+  --bs-body-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bs-body-bg: #f6f7fb;
+  --bs-body-color: #24262d;
+
+  --bs-primary: #4f46e5;
+  --bs-primary-rgb: 79, 70, 229;
+  --bs-primary-text-emphasis: #362fa0;
+  --bs-primary-bg-subtle: #eceafd;
+  --bs-primary-border-subtle: #d3cffb;
+
+  --bs-secondary: #6b7280;
+  --bs-secondary-rgb: 107, 114, 128;
+
+  --bs-success: #16a34a;
+  --bs-success-rgb: 22, 163, 74;
+  --bs-warning: #d97706;
+  --bs-warning-rgb: 217, 119, 6;
+  --bs-danger: #dc2626;
+  --bs-danger-rgb: 220, 38, 38;
+  --bs-info: #0891b2;
+  --bs-info-rgb: 8, 145, 178;
+
+  --bs-link-color: var(--bs-primary);
+  --bs-link-color-rgb: var(--bs-primary-rgb);
+  --bs-link-hover-color: #3c34ba;
+  --bs-link-hover-color-rgb: 60, 52, 186;
+
+  --bs-border-color: #e3e5ec;
+  --bs-border-radius: 0.6rem;
+  --bs-border-radius-sm: 0.4rem;
+  --bs-border-radius-lg: 0.9rem;
+  --bs-border-radius-xl: 1.25rem;
+
+  /* custom scale, layered on top of Bootstrap's own variables */
+  --cn-surface: #ffffff;
+  --cn-surface-muted: #f1f2f7;
+  --cn-text-muted: #6b7280;
+  --cn-shadow-sm: 0 1px 2px rgba(20, 21, 40, 0.06);
+  --cn-shadow-md: 0 6px 20px rgba(20, 21, 40, 0.08);
+  --cn-accent-soft: rgba(79, 70, 229, 0.1);
+  --cn-online-dot: #22c55e;
+}
+
 html {
   font-size: 14px;
 }
@@ -6,10 +55,6 @@ html {
   html {
     font-size: 16px;
   }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
@@ -21,6 +66,19 @@ body {
   margin-bottom: 60px;
 }
 
+h1, .h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.01em; }
+h2, .h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
+h5, .h5 { font-weight: 600; }
+
+.text-muted { color: var(--cn-text-muted) !important; }
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus, .form-select:focus {
+  box-shadow: 0 0 0 0.2rem var(--cn-accent-soft);
+}
+
+.btn { font-weight: 500; }
+.btn-primary { box-shadow: var(--cn-shadow-sm); }
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
@@ -30,20 +88,293 @@ body {
   text-align: start;
 }
 
+/* ---------------------------------------------------------
+   Layout shell: header / footer
+   --------------------------------------------------------- */
+.app-navbar {
+  background-color: var(--cn-surface);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--bs-body-color) !important;
+}
+
+.app-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--bs-border-radius);
+  background: linear-gradient(135deg, var(--bs-primary), #7c3aed);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.app-nav .nav-link {
+  color: var(--cn-text-muted);
+  font-weight: 500;
+  border-radius: var(--bs-border-radius-sm);
+  padding: 0.4rem 0.75rem;
+}
+
+.app-nav .nav-link:hover {
+  color: var(--bs-body-color);
+  background-color: var(--cn-surface-muted);
+}
+
+.app-nav .nav-link.active {
+  color: var(--bs-primary);
+  background-color: var(--cn-accent-soft);
+}
+
+.app-footer {
+  border-top: 1px solid var(--bs-border-color);
+  color: var(--cn-text-muted);
+  background-color: var(--cn-surface);
+}
+
+/* Account area in the navbar (_LoginPartial) */
+.account-menu .btn-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--bs-border-color);
+  background-color: var(--cn-surface);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+}
+
+.account-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: var(--cn-accent-soft);
+  color: var(--bs-primary);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+/* ---------------------------------------------------------
+   Surfaces / cards
+   --------------------------------------------------------- */
+.surface-card {
+  background-color: var(--cn-surface);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--cn-shadow-sm);
+}
+
+/* ---------------------------------------------------------
+   Notes index: folder nav + note cards
+   --------------------------------------------------------- */
+.folder-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.folder-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--bs-border-radius-sm);
+  color: var(--bs-body-color);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.92rem;
+}
+
+.folder-nav-link:hover {
+  background-color: var(--cn-surface-muted);
+  color: var(--bs-body-color);
+}
+
+.folder-nav-link.active {
+  background-color: var(--cn-accent-soft);
+  color: var(--bs-primary);
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.note-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.1rem 1.15rem;
+  background-color: var(--cn-surface);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--cn-shadow-sm);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.note-card:hover {
+  box-shadow: var(--cn-shadow-md);
+  border-color: var(--bs-primary-border-subtle);
+  transform: translateY(-1px);
+}
+
+.note-card-title {
+  font-weight: 600;
+  color: var(--bs-body-color);
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-card-title:hover {
+  color: var(--bs-primary);
+}
+
+.note-card-meta {
+  font-size: 0.8rem;
+  color: var(--cn-text-muted);
+}
+
+.note-card-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--cn-text-muted);
+  border: 1px dashed var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  background-color: var(--cn-surface-muted);
+}
+
+/* ---------------------------------------------------------
+   Note editor (Edit.cshtml)
+   --------------------------------------------------------- */
 .connection-banner {
   margin-bottom: 1rem;
+  border-radius: var(--bs-border-radius);
+  animation: cn-banner-in 0.25s ease;
+}
+
+@keyframes cn-banner-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#blocks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
 }
 
 .note-block {
-  transition: background-color 0.4s ease;
-  border-radius: 0.25rem;
-  padding: 0.25rem;
+  position: relative;
+  border-radius: var(--bs-border-radius);
+  padding: 0;
+}
+
+.note-block-textarea {
+  border-color: var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.note-block-textarea:focus {
+  border-color: var(--bs-primary-border-subtle);
 }
 
 .note-block.block-recently-edited {
-  background-color: #fff3cd;
+  animation: cn-block-flash 1.5s ease;
+}
+
+.note-block.block-recently-edited .note-block-textarea {
+  animation: cn-block-flash-border 1.5s ease;
+}
+
+@keyframes cn-block-flash {
+  0% { background-color: var(--cn-accent-soft); border-radius: var(--bs-border-radius); }
+  100% { background-color: transparent; }
+}
+
+@keyframes cn-block-flash-border {
+  0% { border-color: var(--bs-primary); box-shadow: 0 0 0 0.2rem var(--cn-accent-soft); }
+  100% { border-color: var(--bs-border-color); box-shadow: none; }
 }
 
 .typing-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background-color: var(--cn-accent-soft);
+  color: var(--bs-primary-text-emphasis);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.typing-badge::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background-color: var(--bs-primary);
+  animation: cn-typing-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cn-typing-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Presence roster */
+#viewer-roster .list-group-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+}
+
+#viewer-roster .list-group-item:not(.text-muted)::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background-color: var(--cn-online-dot);
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+  animation: cn-presence-pulse 2s ease-out infinite;
+}
+
+@keyframes cn-presence-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
+  70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.collab-panel-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cn-text-muted);
+  margin-bottom: 0.6rem;
 }

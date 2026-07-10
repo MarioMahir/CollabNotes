@@ -36,9 +36,10 @@ public class NoteHub : Hub
 
         var displayName = Context.User!.FindFirstValue(ClaimTypes.Name) ?? UserId;
         var viewers = await _collaborationService.RegisterViewerAsync(noteId, Context.ConnectionId, UserId, displayName);
+        var othersAlreadyPresent = viewers.Where(v => v.ConnectionId != Context.ConnectionId).ToList();
 
         await Clients.OthersInGroup(noteId.ToString()).SendAsync("ViewerJoined", new { userId = UserId, displayName });
-        await Clients.Caller.SendAsync("PresenceSnapshot", viewers);
+        await Clients.Caller.SendAsync("PresenceSnapshot", othersAlreadyPresent);
 
         await base.OnConnectedAsync();
     }
@@ -66,11 +67,33 @@ public class NoteHub : Hub
         {
             await Clients.Caller.SendAsync("EditRejected", blockIndex);
         }
+        catch (InvalidOperationException)
+        {
+            await Clients.Caller.SendAsync("EditRejected", blockIndex);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            await Clients.Caller.SendAsync("EditRejected", blockIndex);
+        }
     }
 
-    public Task NotifyTypingAsync(Guid noteId, int blockIndex)
-        => Clients.OthersInGroup(noteId.ToString()).SendAsync("UserTyping", new { userId = UserId, blockIndex });
+    public async Task NotifyTypingAsync(Guid noteId, int blockIndex)
+    {
+        if (!await _collaborationService.CanAccessNoteAsync(noteId, UserId))
+        {
+            return;
+        }
 
-    public Task NotifyTypingStoppedAsync(Guid noteId, int blockIndex)
-        => Clients.OthersInGroup(noteId.ToString()).SendAsync("UserStoppedTyping", new { userId = UserId, blockIndex });
+        await Clients.OthersInGroup(noteId.ToString()).SendAsync("UserTyping", new { userId = UserId, blockIndex });
+    }
+
+    public async Task NotifyTypingStoppedAsync(Guid noteId, int blockIndex)
+    {
+        if (!await _collaborationService.CanAccessNoteAsync(noteId, UserId))
+        {
+            return;
+        }
+
+        await Clients.OthersInGroup(noteId.ToString()).SendAsync("UserStoppedTyping", new { userId = UserId, blockIndex });
+    }
 }

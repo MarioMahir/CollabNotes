@@ -90,6 +90,7 @@ public class NotesController : Controller
         {
             vm.Folders = await _folderService.GetFoldersAsync(CurrentUserId);
             vm.Members = await _noteService.GetMembersAsync(id, CurrentUserId);
+            vm.Blocks = NoteBlockSplitter.Split(vm.Content);
             return View(vm);
         }
 
@@ -161,14 +162,21 @@ public class NotesController : Controller
             return NotFound();
         }
 
-        var vm = new NoteHistoryViewModel
+        try
         {
-            NoteId = id,
-            NoteTitle = note.Title,
-            Snapshots = await _noteService.GetSnapshotsAsync(id, CurrentUserId)
-        };
+            var vm = new NoteHistoryViewModel
+            {
+                NoteId = id,
+                NoteTitle = note.Title,
+                Snapshots = await _noteService.GetSnapshotsAsync(id, CurrentUserId)
+            };
 
-        return View(vm);
+            return View(vm);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 
     public async Task<IActionResult> SnapshotDetail(Guid id, Guid snapshotId)
@@ -179,19 +187,26 @@ public class NotesController : Controller
             return NotFound();
         }
 
-        var snapshot = await _noteService.GetSnapshotAsync(id, snapshotId, CurrentUserId);
-        if (snapshot is null)
+        try
         {
-            return NotFound();
+            var snapshot = await _noteService.GetSnapshotAsync(id, snapshotId, CurrentUserId);
+            if (snapshot is null)
+            {
+                return NotFound();
+            }
+
+            var vm = new NoteHistoryViewModel
+            {
+                NoteId = id,
+                NoteTitle = note.Title,
+                Snapshots = [snapshot]
+            };
+
+            return View(vm);
         }
-
-        var vm = new NoteHistoryViewModel
+        catch (UnauthorizedAccessException)
         {
-            NoteId = id,
-            NoteTitle = note.Title,
-            Snapshots = [snapshot]
-        };
-
-        return View(vm);
+            return Forbid();
+        }
     }
 }

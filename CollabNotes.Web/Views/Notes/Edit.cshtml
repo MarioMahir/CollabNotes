@@ -16,92 +16,103 @@
 <div id="connection-banner" class="d-none"></div>
 
 <div id="note-collab" data-note-id="@Model.Id" data-viewer-role="@Model.ViewerRole">
-    <div class="row">
+    <div class="row g-4">
         <div class="col-md-8">
-            @if (isReader)
-            {
-                <div class="alert alert-info">Tienes acceso de solo lectura a esta nota. Verás los cambios en vivo, pero no puedes editar.</div>
-            }
+            <div class="surface-card p-4">
+                @if (isReader)
+                {
+                    <div class="alert alert-info">Tienes acceso de solo lectura a esta nota. Verás los cambios en vivo, pero no puedes editar.</div>
+                }
 
-            <form id="note-edit-form" asp-action="Edit" asp-route-id="@Model.Id" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="Content" id="content-hidden-field" />
+                <form id="note-edit-form" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="Content" id="content-hidden-field" />
 
-                <div class="mb-3">
-                    <label asp-for="Title" class="form-label"></label>
-                    <input asp-for="Title" class="form-control" disabled="@isReader" />
-                    <span asp-validation-for="Title" class="text-danger"></span>
-                </div>
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" disabled="@isReader" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
 
-                <div class="mb-3">
-                    <label asp-for="FolderId" class="form-label">Carpeta</label>
-                    <select asp-for="FolderId" class="form-select" disabled="@isReader">
-                        <option value="">(sin carpeta)</option>
-                        @foreach (var folder in Model.Folders)
+                    <div class="mb-3">
+                        <label asp-for="FolderId" class="form-label">Carpeta</label>
+                        <select asp-for="FolderId" class="form-select" disabled="@isReader">
+                            <option value="">(sin carpeta)</option>
+                            @foreach (var folder in Model.Folders)
+                            {
+                                <option value="@folder.Id">@folder.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contenido</label>
+                        <div id="blocks-container">
+                            @for (var i = 0; i < Model.Blocks.Count; i++)
+                            {
+                                <div class="note-block" data-block-index="@i">
+                                    <span class="typing-badge d-none mb-1">Alguien está escribiendo…</span>
+                                    <textarea class="form-control note-block-textarea" rows="3" data-block-index="@i">@Model.Blocks[i]</textarea>
+                                </div>
+                            }
+                        </div>
+                        @if (!isReader)
                         {
-                            <option value="@folder.Id">@folder.Name</option>
-                        }
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Contenido</label>
-                    <div id="blocks-container">
-                        @for (var i = 0; i < Model.Blocks.Count; i++)
-                        {
-                            <div class="note-block mb-2" data-block-index="@i">
-                                <span class="typing-badge d-none badge bg-info text-dark mb-1"></span>
-                                <textarea class="form-control note-block-textarea" rows="3" data-block-index="@i">@Model.Blocks[i]</textarea>
-                            </div>
+                            <button type="button" id="add-block-btn" class="btn btn-sm btn-outline-secondary mt-2">+ Añadir párrafo</button>
                         }
                     </div>
-                    @if (!isReader)
-                    {
-                        <button type="button" id="add-block-btn" class="btn btn-sm btn-outline-secondary mt-1">+ Añadir párrafo</button>
-                    }
-                </div>
 
-                @if (!isReader)
-                {
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                }
-                <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
-                <a asp-action="History" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Ver historial</a>
-            </form>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (!isReader)
+                        {
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        }
+                        <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+                        <a asp-action="History" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Ver historial</a>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="col-md-4">
-            <h5>En línea ahora</h5>
-            <ul id="viewer-roster" class="list-group mb-3">
-                <li class="list-group-item text-muted">Nadie más está viendo esta nota.</li>
-            </ul>
+            <div class="surface-card p-3 mb-3">
+                <div class="collab-panel-title">En línea ahora</div>
+                <ul id="viewer-roster" class="list-group list-group-flush">
+                    <li class="list-group-item text-muted">Nadie más está viendo esta nota.</li>
+                </ul>
+            </div>
 
-            <h5>Colaboradores</h5>
-            <ul class="list-group mb-3">
-                @foreach (var member in Model.Members)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>@member.DisplayName</span>
-                        <span class="badge bg-secondary">@member.Role</span>
-                    </li>
-                }
-            </ul>
+            <div class="surface-card p-3 mb-3">
+                <div class="collab-panel-title">Colaboradores</div>
+                <ul class="list-group list-group-flush">
+                    @foreach (var member in Model.Members)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@member.DisplayName</span>
+                            <span class="badge bg-secondary">@member.Role</span>
+                        </li>
+                    }
+                </ul>
+            </div>
 
             @if (Model.ViewerRole == PermissionRole.Owner)
             {
-                <form asp-action="InviteUser" asp-route-id="@Model.Id" method="post">
-                    <div class="mb-2">
-                        <input type="text" name="emailOrUsername" class="form-control form-control-sm" placeholder="Email o usuario" required />
-                    </div>
-                    <div class="mb-2">
-                        <select name="role" class="form-select form-select-sm">
-                            <option value="@PermissionRole.Editor">Editor</option>
-                            <option value="@PermissionRole.Reader">Lector</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Invitar</button>
-                </form>
+                <div class="surface-card p-3">
+                    <div class="collab-panel-title">Invitar colaborador</div>
+                    <form asp-action="InviteUser" asp-route-id="@Model.Id" method="post">
+                        <div class="mb-2">
+                            <input type="text" name="emailOrUsername" class="form-control form-control-sm" placeholder="Email o usuario" required />
+                        </div>
+                        <div class="mb-2">
+                            <select name="role" class="form-select form-select-sm">
+                                <option value="@PermissionRole.Editor">Editor</option>
+                                <option value="@PermissionRole.Reader">Lector</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Invitar</button>
+                    </form>
+                </div>
             }
         </div>
     </div>

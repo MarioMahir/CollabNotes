@@ -153,8 +153,15 @@ public class NoteService : INoteService
         await _noteRepository.SaveChangesAsync();
     }
 
+    private const int MaxBlockIndex = 5000;
+
     public async Task<BlockUpdateDto> UpdateBlockAsync(Guid noteId, int blockIndex, string blockContent, string userId)
     {
+        if (blockIndex < 0 || blockIndex > MaxBlockIndex)
+        {
+            throw new ArgumentOutOfRangeException(nameof(blockIndex), "Índice de bloque inválido.");
+        }
+
         var note = await EnsureEditableAsync(noteId, userId);
 
         await MaybeSnapshotAsync(note);
