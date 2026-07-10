@@ -1,0 +1,129 @@
+using System.Security.Claims;
+using CollabNotes.Application.Interfaces;
+using CollabNotes.Web.Models.Notes;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CollabNotes.Web.Controllers;
+
+[Authorize]
+public class NotesController : Controller
+{
+    private readonly INoteService _noteService;
+    private readonly IFolderService _folderService;
+
+    public NotesController(INoteService noteService, IFolderService folderService)
+    {
+        _noteService = noteService;
+        _folderService = folderService;
+    }
+
+    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+    public async Task<IActionResult> Index(Guid? folderId)
+    {
+        var vm = new NotesIndexViewModel
+        {
+            Notes = await _noteService.GetNotesByFolderAsync(folderId, CurrentUserId),
+            Folders = await _folderService.GetFoldersAsync(CurrentUserId),
+            SelectedFolderId = folderId
+        };
+
+        return View(vm);
+    }
+
+    public async Task<IActionResult> Create(Guid? folderId)
+    {
+        var vm = new NoteFormViewModel
+        {
+            FolderId = folderId,
+            Folders = await _folderService.GetFoldersAsync(CurrentUserId)
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(NoteFormViewModel vm)
+    {
+        if (!ModelState.IsValid)
+        {
+            vm.Folders = await _folderService.GetFoldersAsync(CurrentUserId);
+            return View(vm);
+        }
+
+        var note = await _noteService.CreateAsync(vm.Title, vm.FolderId, CurrentUserId);
+        return RedirectToAction(nameof(Edit), new { id = note.Id });
+    }
+
+    public async Task<IActionResult> Edit(Guid id)
+    {
+        var note = await _noteService.GetByIdAsync(id, CurrentUserId);
+        if (note is null)
+        {
+            return NotFound();
+        }
+
+        var vm = new NoteFormViewModel
+        {
+            Id = note.Id,
+            Title = note.Title,
+            Content = note.Content,
+            FolderId = note.FolderId,
+            Folders = await _folderService.GetFoldersAsync(CurrentUserId)
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Guid id, NoteFormViewModel vm)
+    {
+        if (!ModelState.IsValid)
+        {
+            vm.Folders = await _folderService.GetFoldersAsync(CurrentUserId);
+            return View(vm);
+        }
+
+        try
+        {
+            await _noteService.UpdateAsync(id, vm.Title, vm.Content, CurrentUserId);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            await _noteService.DeleteAsync(id, CurrentUserId);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateFolder(string name)
+    {
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            await _folderService.CreateAsync(name, CurrentUserId);
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+}

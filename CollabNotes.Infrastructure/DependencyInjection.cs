@@ -1,4 +1,8 @@
+using CollabNotes.Application.Interfaces;
+using CollabNotes.Infrastructure.Identity;
 using CollabNotes.Infrastructure.Persistence;
+using CollabNotes.Infrastructure.Persistence.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +15,12 @@ public static class DependencyInjection
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            .AddEntityFrameworkStores<AppDbContext>();
+
+        services.AddScoped<INoteRepository, NoteRepository>();
+        services.AddScoped<IFolderRepository, FolderRepository>();
 
         return services;
     }

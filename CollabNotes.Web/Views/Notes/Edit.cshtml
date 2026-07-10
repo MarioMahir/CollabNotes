@@ -1,0 +1,41 @@
+@model CollabNotes.Web.Models.Notes.NoteFormViewModel
+
+@{
+    ViewData["Title"] = "Editar nota";
+}
+
+<h1>Editar nota</h1>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="col-md-8">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FolderId" class="form-label">Carpeta</label>
+        <select asp-for="FolderId" class="form-select">
+            <option value="">(sin carpeta)</option>
+            @foreach (var folder in Model.Folders)
+            {
+                <option value="@folder.Id">@folder.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Content" class="form-label"></label>
+        <textarea asp-for="Content" class="form-control" rows="15"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
